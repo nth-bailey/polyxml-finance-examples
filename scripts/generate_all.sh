@@ -53,9 +53,10 @@ echo -e "\n[4/7] ⚡ Generating Modern C++20 (Header-Only Value Types & Concepts
   --package "polyxml::generated" \
   --out generated/cpp
 
-echo -e "\n[5/7] ☕ Generating Java 21+ (Records & Sealed Interfaces)..."
+echo -e "\n[5/7] ☕ Generating Java 21+ (Records, Sealed Interfaces & Jackson Enterprise Annotations)..."
 "${POLYXML_BIN}" generate "${SCHEMA_PATH}" \
   --lang java \
+  --backend jackson \
   --package "com.financial.iso20022.pacs008" \
   --out generated/java
 
@@ -65,16 +66,13 @@ echo -e "\n[6/7] 🌐 Generating TypeScript 5+ (Typed Interfaces & Zod Validatio
   --zod \
   --out generated/typescript
 
-echo -e "\n[7/7] 🔷 Generating C# 12 / .NET 8 (Primary Constructor Records & Dual Attributes)..."
+echo -e "\n[7/7] 🔷 Generating C# 12 / .NET 8 (Primary Constructor Records & Native AOT Source Generator)..."
 "${POLYXML_BIN}" generate "${SCHEMA_PATH}" \
   --lang csharp \
+  --source-gen \
   --package "Financial.Iso20022.Pacs008" \
   --out generated/csharp
 
-# Disambiguate single-nullable parameter constructor in C# record if needed
-if [ -f generated/csharp/Pacs008Core.cs ]; then
-    sed -i 's/public RemittanceInformation() : this(default)/public RemittanceInformation() : this(default(string?))/' generated/csharp/Pacs008Core.cs
-fi
 
 # Format Rust code
 if command -v cargo &>/dev/null && [ -f examples/rust/Cargo.toml ]; then
