@@ -1,0 +1,41 @@
+PolyXML Finance Examples
+Copyright (c) 2026 Bailey Nguyen
+
+This project is licensed under the MIT License (see the LICENSE file in the root directory).
+
+================================================================================
+Third-Party Standards, Specifications, and Data Notices
+================================================================================
+
+This software includes, references, or derives data contracts from the following
+third-party specifications and international financial messaging standards:
+
+1. ISO 20022 Universal Financial Industry Message Scheme
+   - Organization: International Organization for Standardization (ISO) / ISO 20022 Registration Authority
+   - Message Definition: pacs.008.001.10 (Financial Institutional Customer Credit Transfer)
+   - Source: https://www.iso20022.org
+   - Intellectual Property Policy: The ISO 20022 message definitions and XML schemas are free of intellectual
+     property rights and open for use by any interested party in the financial services industry.
+   - Files: schemas/finance/pacs_008_core.xsd, data/pacs_008_customer_credit_transfer.xml
+
+2. ISO 4217 Currency and Funds Code List
+   - Published by the International Organization for Standardization (ISO).
+   - Usage: Currency code enumeration identifiers (USD, EUR, GBP, etc.).
+
+3. FedNow Instant Payment Telemetry Formats
+   - Format: Synthetic $250,000 USD B2B supplier payment payload modeled after modern instant payment
+     settlement mechanisms and Stripe PaymentIntent structures.
+   - Purpose: Provided solely for compatibility, testing, and interoperability demonstration.
+   - Files: data/payment_intent_fednow.json, schemas/payments/payment-service.proto
+
+================================================================================
+Trademark Notices
+================================================================================
+
+- "ISO" is a registered trademark of the International Organization for Standardization.
+- "FedNow" is a service mark of the Federal Reserve Banks.
+- "Stripe" is a registered trademark of Stripe, Inc.
+- All trademarks, service marks, and trade names referenced in this repository are the property
+  of their respective owners. Their mention in this repository does not imply endorsement,
+  sponsorship, or affiliation, and is used strictly for descriptive identification and
+  interoperability demonstration under fair use.

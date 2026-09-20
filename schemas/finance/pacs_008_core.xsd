@@ -4,6 +4,15 @@
            targetNamespace="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10"
            elementFormDefault="qualified">
 
+    <xs:annotation>
+        <xs:documentation>
+            ISO 20022 Financial Services - Financial Information eXchange
+            Message Identifier: pacs.008.001.10 (Financial Institutional Customer Credit Transfer)
+            Source: ISO 20022 Registration Authority (https://www.iso20022.org)
+            Open standard free of intellectual property restrictions under the ISO 20022 IP Policy.
+        </xs:documentation>
+    </xs:annotation>
+
     <!-- Active Currency Code (ISO 4217) -->
     <xs:simpleType name="ActiveCurrencyCode">
         <xs:restriction base="xs:string">

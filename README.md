@@ -306,7 +306,10 @@ dotnet run --project examples/csharp/FedNowPacs008Adapter.csproj
 
 ---
 
-## 📜 License
+## 📜 License & Notices
 
-Licensed under the [MIT License](LICENSE).
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for full terms.
+
+For third-party standards, specifications, open financial messaging policies (ISO 20022 IPR Policy), and trademark notices, see [`NOTICE`](NOTICE).
+All schemas are sourced from open international standards bodies ([ISO 20022 Registration Authority](https://www.iso20022.org)).
 
