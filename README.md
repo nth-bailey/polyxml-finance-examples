@@ -79,21 +79,21 @@ sequenceDiagram
 
 ---
 
-## ⚡ Cross-Language Capability & Latency Benchmarks
+### ⚡ Cross-Language Capability & Latency Benchmarks
 
 All 7 implementations were benchmarked processing the $250,000 USD FedNow supplier payment payload (`data/payment_intent_fednow.json`), generating a valid ISO 20022 `pacs.008.001.10` XML delivery message, serializing to native JSON on the same model, and executing complete roundtrip restoration.
 
 | Target Language | PolyXML Paradigm | XML Serialization | JSON Serialization | JSON Deserialization | Memory Allocations |
 | :--- | :--- | :---: | :---: | :---: | :---: |
-| **⚡ C++20** | Header-only value types, `XmlModel` concept & fast streams | **5.72 μs** | **2.14 μs** | Near-zero | Stack-allocated value types |
-| **🌐 TypeScript 5+** | Native ES interfaces + runtime Zod object schemas | **2.09 μs** | **2.04 μs** | V8 Engine | Strict runtime Zod validation |
-| **🐹 Go** | Dual `xml:"..."` and `json:"..."` struct tags + `XMLName` | **19.61 μs** | **4.93 μs** | **30.36 μs** | Stack-optimized struct layout |
-| **☕ Java 21+** | Immutable `record`s, `java.time.Instant`, sealed interfaces | **14.26 μs** | **5.30 μs** | JVM escape analyzed | Immutability & compact constructors |
-| **🦀 Rust** | Borrowed zero-copy slices (`Cow<'a, str>`) & serde codecs | **49.40 μs** | **91.96 μs** | **82.30 μs** | **Zero heap allocations** |
-| **🔷 C# 12 / .NET 8** | Primary constructor records, `XmlSerializer` + `System.Text.Json` | **61.84 μs** | **20.59 μs** | **43.99 μs** | Value record semantics |
+| **🦀 Rust** | Borrowed zero-copy slices (`Cow<'a, str>`) & serde codecs | **47.9 μs** | **110.9 μs** | **83.8 μs** | **Zero heap allocations** |
+| **⚡ C++20** | Header-only value types, `XmlModel` concept & fast streams | **68.2 μs** | **7.4 μs** | Near-zero | Stack-allocated value types |
+| **🐹 Go** | Dual `xml:"..."` and `json:"..."` struct tags + `XMLName` | **144.3 μs** | **226.8 μs** | **64.6 μs** | Stack-optimized struct layout |
+| **🌐 TypeScript 5+** | Native ES interfaces + runtime Zod object schemas | **198.0 μs** | **26.5 μs** | **200.2 μs** | Strict runtime Zod validation |
+| **☕ Java 21+** | Immutable `record`s, `java.time.Instant`, sealed interfaces | **6.20 ms** | **691.3 μs** | JVM escape analyzed | Immutability & compact constructors |
 | **🐍 Python** | `@dataclass(slots=True)` + PolyXML C-Engine bindings | **4.10 ms** | **439.4 μs** | **460.9 μs** | Cython/PyO3 bindings |
+| **🔷 C# 12 / .NET 8** | Primary constructor records, `XmlSerializer` + `System.Text.Json` | **10.79 ms** | **39.12 ms** | **10.26 ms** | Value record semantics |
 
-*Benchmarked on Linux x86_64 across 10,000 iterations per language. Measurements reflect end-to-end serialization.*
+*Benchmarked on Linux x86_64 across identical FedNow payment payloads. Measurements reflect end-to-end serialization and typed deserialization.*
 
 ---
 
@@ -168,14 +168,12 @@ polyxml generate schemas/finance/pacs_008_core.xsd \
 
 ---
 
-## 💻 Language Showcase
+## 💡 Key Language Highlights
 
-### 1. 🦀 Rust: Zero-Copy Borrowed Slices & Inherent Serialization
+### 1. 🦀 Rust: Zero-Copy Borrowed Slices & Inherent Codecs
 ```rust
-use pacs_008_core::{ActiveCurrencyCode, FiToFiCustomerCreditTransfer, GroupHeader};
-
-// Ingest JSON and adapt directly into PolyXML-generated borrowed model
-let doc = FiToFiCustomerCreditTransfer {
+// Strongly-typed Document borrows strings directly from incoming JSON without copying
+let doc = Document {
     grp_hdr: GroupHeader {
         msg_id: Cow::Borrowed(&intent.message_id),
         cre_dt_tm: Cow::Borrowed(&intent.created_at),
@@ -185,11 +183,11 @@ let doc = FiToFiCustomerCreditTransfer {
     cdt_trf_tx_inf: vec![ ... ],
 };
 
-// Zero-copy serialization to ISO 20022 XML in 49 μs
-let xml = quick_xml::se::to_string(&doc)?;
+// Zero-copy serialization to ISO 20022 XML in 48 μs
+let xml = doc.to_xml_string()?;
 
-// Native JSON wire serialization on the exact same model in 92 μs
-let json = serde_json::to_string(&doc)?;
+// Native JSON wire serialization on the exact same model in 111 μs
+let json = doc.to_json_string()?;
 ```
 
 ### 2. 🐹 Go: Dual Struct Tags & Standard Library Unmarshaling
@@ -202,8 +200,8 @@ type ActiveOrHistoricCurrencyAndAmount struct {
 }
 
 // Single data model works natively with both encoding/xml and encoding/json
-xmlBytes, _ := xml.MarshalIndent(doc, "", "  ")  // 19.61 μs
-jsonBytes, _ := json.Marshal(doc)                //  4.93 μs
+xmlBytes, _ := xml.MarshalIndent(doc, "", "  ")  // 144.3 μs
+jsonBytes, _ := json.Marshal(doc)                // 226.8 μs
 ```
 
 ### 3. ⚡ Modern C++20: Value Types & Concepts
@@ -217,7 +215,7 @@ doc.grp_hdr.msg_id = "MSG-20260920-FEDNOW-883492";
 doc.cdt_trf_tx_inf.push_back(tx);
 
 assert(doc.validate()); // Validates all ISO 20022 facet constraints
-std::string xml = serialize_xml(doc); // 5.72 μs/op
+std::string xml = serialize_xml(doc); // 68.2 μs
 ```
 
 ### 4. ☕ Java 21+: Modern Records with Compact Constructors
@@ -240,7 +238,7 @@ import { FiToFiCustomerCreditTransferSchema, type FiToFiCustomerCreditTransfer }
 const validated = FiToFiCustomerCreditTransferSchema.parse(candidateDoc);
 
 // Execute directly with Node 22+ native type stripping
-// node --experimental-strip-types examples/typescript/index.ts (2.09 μs/op)
+// node --experimental-strip-types examples/typescript/index.ts (198.0 μs)
 ```
 
 ---
@@ -306,3 +304,4 @@ dotnet run --project examples/csharp/FedNowPacs008Adapter.csproj
 ## 📜 License
 
 Licensed under the [MIT License](LICENSE).
+

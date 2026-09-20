@@ -162,3 +162,4 @@
     <xs:element name="Document" type="FIToFICustomerCreditTransfer"/>
 
 </xs:schema>
+

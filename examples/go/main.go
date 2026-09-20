@@ -5,8 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"path/filepath"
-	"strings"
 	"time"
 
 	pacs008 "github.com/nth-bailey/polyxml-finance-examples/generated/go"
@@ -213,93 +211,59 @@ func main() {
 	}
 	fmt.Println("✔ ISO 20022 pacs.008 schema validation passed!")
 
-	// 4. Serialize to XML
+	// 4. Inherent XML Serialization
+	startXml := time.Now()
 	xmlBytes, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "XML marshal error: %v\n", err)
 		os.Exit(1)
 	}
 	xmlOutput := xml.Header + string(xmlBytes)
+	xmlDuration := time.Since(startXml)
 
-	// 5. Serialize to JSON using PolyXML struct tags
+	fmt.Printf("\n[1] Generated ISO 20022 pacs.008.001.10 XML Message (latency: %v):\n", xmlDuration)
+	previewLen := 400
+	if len(xmlOutput) < previewLen {
+		previewLen = len(xmlOutput)
+	}
+	fmt.Printf("%s\n...\n\n", xmlOutput[:previewLen])
+
+	// 5. Inherent Native JSON Serialization on Same Model
+	startJson := time.Now()
 	jsonBytes, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "JSON marshal error: %v\n", err)
 		os.Exit(1)
 	}
+	jsonDuration := time.Since(startJson)
 
-	// 6. Round-trip Deserialization from JSON
+	fmt.Printf("[2] Generated Native JSON on Same Model (latency: %v):\n", jsonDuration)
+	jsonPreviewLen := 400
+	if len(jsonBytes) < jsonPreviewLen {
+		jsonPreviewLen = len(jsonBytes)
+	}
+	fmt.Printf("%s\n...\n\n", string(jsonBytes[:jsonPreviewLen]))
+
+	// 6. Roundtrip Inherent JSON Deserialization back into Document
+	startDe := time.Now()
 	var roundtripDoc pacs008.FiToFiCustomerCreditTransfer
 	if err := json.Unmarshal(jsonBytes, &roundtripDoc); err != nil {
 		fmt.Fprintf(os.Stderr, "JSON unmarshal error: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("\nGenerated XML Payload (size: %d bytes):\n", len(xmlOutput))
-	lines := strings.Split(xmlOutput, "\n")
-	previewCount := 25
-	if len(lines) < previewCount {
-		previewCount = len(lines)
-	}
-	for i := 0; i < previewCount; i++ {
-		fmt.Printf("  %s\n", lines[i])
-	}
-	if len(lines) > previewCount {
-		fmt.Printf("  ... [%d lines truncated]\n", len(lines)-previewCount)
-	}
-
-	fmt.Printf("\nGenerated JSON Wire Representation (size: %d bytes):\n", len(jsonBytes))
-	jsonLines := strings.Split(string(jsonBytes), "\n")
-	previewCountJson := 20
-	if len(jsonLines) < previewCountJson {
-		previewCountJson = len(jsonLines)
-	}
-	for i := 0; i < previewCountJson; i++ {
-		fmt.Printf("  %s\n", jsonLines[i])
-	}
-	if len(jsonLines) > previewCountJson {
-		fmt.Printf("  ... [%d lines truncated]\n", len(jsonLines)-previewCountJson)
-	}
-
-	// 7. Micro-benchmarking
-	const iterations = 10000
-
-	startXml := time.Now()
-	for i := 0; i < iterations; i++ {
-		_, _ = xml.Marshal(doc)
-	}
-	xmlDuration := time.Since(startXml)
-	xmlPerOp := float64(xmlDuration.Nanoseconds()) / float64(iterations) / 1000.0
-
-	startJson := time.Now()
-	for i := 0; i < iterations; i++ {
-		_, _ = json.Marshal(doc)
-	}
-	jsonDuration := time.Since(startJson)
-	jsonPerOp := float64(jsonDuration.Nanoseconds()) / float64(iterations) / 1000.0
-
-	startDe := time.Now()
-	for i := 0; i < iterations; i++ {
-		var target pacs008.FiToFiCustomerCreditTransfer
-		_ = json.Unmarshal(jsonBytes, &target)
-	}
 	deDuration := time.Since(startDe)
-	dePerOp := float64(deDuration.Nanoseconds()) / float64(iterations) / 1000.0
 
-	fmt.Println("\n--------------------------------------------------------------------------------")
-	fmt.Println("  PolyXML Go Performance Metrics (10,000 iterations)")
-	fmt.Println("--------------------------------------------------------------------------------")
-	fmt.Printf("  XML Serialization:       %8.2f µs/op\n", xmlPerOp)
-	fmt.Printf("  JSON Serialization:      %8.2f µs/op\n", jsonPerOp)
-	fmt.Printf("  JSON Deserialization:    %8.2f µs/op\n", dePerOp)
-	fmt.Println("--------------------------------------------------------------------------------")
-	fmt.Printf("  Debtor:     %s ($%.2f %s)\n", roundtripDoc.CdtTrfTxInf[0].Dbtr.Name,
-		roundtripDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Value,
-		roundtripDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Currency)
-	fmt.Printf("  Creditor:   %s via %s (Routing: %s)\n",
-		roundtripDoc.CdtTrfTxInf[0].Cdtr.Name,
-		*roundtripDoc.CdtTrfTxInf[0].CdtrAgt.FinInstnID.Name,
-		roundtripDoc.CdtTrfTxInf[0].CdtrAgt.FinInstnID.ClearingSystemMemberID.MemberID)
-	fmt.Println("================================================================================")
-	_ = filepath.Base
+	fmt.Printf("[3] Inherent JSON Deserialization into Document (latency: %v):\n", deDuration)
+	fmt.Printf("    Restored MsgId: %s\n", roundtripDoc.GrpHdr.MsgID)
+	fmt.Printf("    Restored UETR:  %s\n", roundtripDoc.CdtTrfTxInf[0].PmtID.Uetr)
+	fmt.Printf("    Restored Amount: %.2f %s\n", roundtripDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Value, roundtripDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Currency)
+	fmt.Printf("    Restored Debtor: %s\n", roundtripDoc.CdtTrfTxInf[0].Dbtr.Name)
+	fmt.Printf("    Restored Creditor: %s\n", roundtripDoc.CdtTrfTxInf[0].Cdtr.Name)
+
+	if roundtripDoc.CdtTrfTxInf[0].PmtID.Uetr != intent.Payment.UETR {
+		panic("UETR mismatch in Go JSON roundtrip")
+	}
+
+	fmt.Println("\n✅ Go Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!")
 }
+

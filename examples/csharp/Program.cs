@@ -191,6 +191,8 @@ public static class Program
             OmitXmlDeclaration = false
         };
 
+        // 1. Inherent XML Serialization via XmlSerializer
+        var swXml = Stopwatch.StartNew();
         using var stringWriter = new StringWriter();
         using (var xmlWriter = XmlWriter.Create(stringWriter, xmlSettings))
         {
@@ -198,74 +200,42 @@ public static class Program
             namespaces.Add("", "urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10");
             xmlSerializer.Serialize(xmlWriter, doc, namespaces);
         }
+        swXml.Stop();
         var xmlOutput = stringWriter.ToString();
 
-        // 3. JSON Serialization via System.Text.Json
+        Console.WriteLine($"\n[1] Generated ISO 20022 pacs.008.001.10 XML Message (latency: {swXml.Elapsed.TotalMicroseconds:F2} μs):");
+        Console.WriteLine(xmlOutput.Length > 400 ? xmlOutput.Substring(0, 400) + "\n...\n" : xmlOutput);
+
+        // 2. Inherent Native JSON Serialization via System.Text.Json
         var jsonOptions = new JsonSerializerOptions
         {
             WriteIndented = true
         };
-        var jsonOutput = JsonSerializer.Serialize(doc, jsonOptions);
-
-        // 4. JSON Deserialization roundtrip
-        var restoredDoc = JsonSerializer.Deserialize<Document>(jsonOutput, jsonOptions)!;
-
-        Console.WriteLine($"\nGenerated XML Payload (size: {xmlOutput.Length} bytes):");
-        var xmlLines = xmlOutput.Split('\n');
-        for (int i = 0; i < Math.Min(22, xmlLines.Length); i++)
-        {
-            Console.WriteLine("  " + xmlLines[i]);
-        }
-        Console.WriteLine("  ... [truncated]");
-
-        Console.WriteLine($"\nGenerated JSON Wire Representation (size: {jsonOutput.Length} bytes):");
-        var jsonLines = jsonOutput.Split('\n');
-        for (int i = 0; i < Math.Min(18, jsonLines.Length); i++)
-        {
-            Console.WriteLine("  " + jsonLines[i]);
-        }
-        Console.WriteLine("  ... [truncated]");
-
-        // 5. Benchmarking
-        const int iterations = 10000;
-
-        var swXml = Stopwatch.StartNew();
-        for (int i = 0; i < iterations; i++)
-        {
-            using var sw = new StringWriter();
-            using var xw = XmlWriter.Create(sw, xmlSettings);
-            var ns = new XmlSerializerNamespaces();
-            ns.Add("", "urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10");
-            xmlSerializer.Serialize(xw, doc, ns);
-        }
-        swXml.Stop();
-        var xmlUs = (double)swXml.Elapsed.TotalMicroseconds / iterations;
-
         var swJson = Stopwatch.StartNew();
-        for (int i = 0; i < iterations; i++)
-        {
-            _ = JsonSerializer.Serialize(doc, jsonOptions);
-        }
+        var jsonOutput = JsonSerializer.Serialize(doc, jsonOptions);
         swJson.Stop();
-        var jsonUs = (double)swJson.Elapsed.TotalMicroseconds / iterations;
 
-        var swDe = Stopwatch.StartNew();
-        for (int i = 0; i < iterations; i++)
+        Console.WriteLine($"[2] Generated Native JSON on Same Model (latency: {swJson.Elapsed.TotalMicroseconds:F2} μs):");
+        Console.WriteLine(jsonOutput.Length > 400 ? jsonOutput.Substring(0, 400) + "\n...\n" : jsonOutput);
+
+        // 3. Inherent JSON Deserialization into Document record
+        var swFromJson = Stopwatch.StartNew();
+        var restoredDoc = JsonSerializer.Deserialize<Document>(jsonOutput, jsonOptions)!;
+        swFromJson.Stop();
+
+        Console.WriteLine($"[3] Inherent JSON Deserialization into Document (latency: {swFromJson.Elapsed.TotalMicroseconds:F2} μs):");
+        Console.WriteLine($"    Restored MsgId: {restoredDoc.GrpHdr.MsgId}");
+        Console.WriteLine($"    Restored UETR:  {restoredDoc.CdtTrfTxInf[0].PmtId.Uetr}");
+        Console.WriteLine($"    Restored Amount: {restoredDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Value:F2} {restoredDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Currency.Value}");
+        Console.WriteLine($"    Restored Debtor: {restoredDoc.CdtTrfTxInf[0].Dbtr.Name}");
+        Console.WriteLine($"    Restored Creditor: {restoredDoc.CdtTrfTxInf[0].Cdtr.Name} via {restoredDoc.CdtTrfTxInf[0].CdtrAgt.FinInstnId.Name}");
+
+        if (restoredDoc.CdtTrfTxInf[0].PmtId.Uetr != intent.Payment.Uetr)
         {
-            _ = JsonSerializer.Deserialize<Document>(jsonOutput, jsonOptions);
+            throw new InvalidOperationException("UETR mismatch in C# JSON roundtrip");
         }
-        swDe.Stop();
-        var deUs = (double)swDe.Elapsed.TotalMicroseconds / iterations;
 
-        Console.WriteLine("\n--------------------------------------------------------------------------------");
-        Console.WriteLine("  PolyXML C# 12 / .NET 8 Performance Metrics (10,000 iterations)");
-        Console.WriteLine("--------------------------------------------------------------------------------");
-        Console.WriteLine($"  XML Serialization:       {xmlUs,8:F2} µs/op");
-        Console.WriteLine($"  JSON Serialization:      {jsonUs,8:F2} µs/op");
-        Console.WriteLine($"  JSON Deserialization:    {deUs,8:F2} µs/op");
-        Console.WriteLine("--------------------------------------------------------------------------------");
-        Console.WriteLine($"  Debtor:     {restoredDoc.CdtTrfTxInf[0].Dbtr.Name} (${restoredDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Value:F2} {restoredDoc.CdtTrfTxInf[0].IntrBkSttlmAmt.Currency.Value})");
-        Console.WriteLine($"  Creditor:   {restoredDoc.CdtTrfTxInf[0].Cdtr.Name} via {restoredDoc.CdtTrfTxInf[0].CdtrAgt.FinInstnId.Name}");
-        Console.WriteLine("================================================================================");
+        Console.WriteLine("\n✅ C# 12 Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!");
     }
 }
+

@@ -85,3 +85,4 @@ message InstantPaymentResponse {
 service PaymentSettlementService {
   rpc SubmitCreditTransfer (InstantPaymentRequest) returns (InstantPaymentResponse);
 }
+

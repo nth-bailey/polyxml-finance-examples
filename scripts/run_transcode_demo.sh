@@ -51,3 +51,4 @@ echo -e "\n[5] Validating ISO 20022 pacs.008 Core XML Schema:"
 "${POLYXML_BIN}" validate schemas/finance/pacs_008_core.xsd
 
 echo -e "\n✅ PolyXML CLI Bidirectional Streaming & Schema-Directed Transcoding Complete!"
+

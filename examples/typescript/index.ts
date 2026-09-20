@@ -299,45 +299,45 @@ function main() {
 
   // 2. Validate with Zod
   const validatedDoc = FiToFiCustomerCreditTransferSchema.parse(candidateDoc);
-  console.log("✔ ISO 20022 pacs.008 Zod runtime validation passed!");
 
-  // 3. Serialize to XML and JSON
+  // 1. Inherent XML Serialization
+  const t_start_xml = performance.now();
   const xmlOutput = serializeXml(validatedDoc);
+  const t_end_xml = performance.now();
+  const xmlUs = (t_end_xml - t_start_xml) * 1000.0;
+
+  console.log(`\n[1] Generated ISO 20022 pacs.008.001.10 XML Message (latency: ${xmlUs.toFixed(2)}µs):`);
+  console.log(xmlOutput.slice(0, 400) + "\n...\n");
+
+  // 2. Inherent Native JSON Serialization on Same Model
+  const t_start_json = performance.now();
   const jsonWire = JSON.stringify(validatedDoc, null, 2);
+  const t_end_json = performance.now();
+  const jsonUs = (t_end_json - t_start_json) * 1000.0;
 
-  console.log(`\nGenerated XML Payload (size: ${xmlOutput.length} bytes):`);
-  const lines = xmlOutput.split("\n");
-  for (let i = 0; i < Math.min(22, lines.length); i++) {
-    console.log("  " + lines[i]);
+  console.log(`[2] Generated Native JSON on Same Model (latency: ${jsonUs.toFixed(2)}µs):`);
+  console.log(jsonWire.slice(0, 400) + "\n...\n");
+
+  // 3. Inherent JSON Deserialization & Zod Validation
+  const t_start_de = performance.now();
+  const parsedJson = JSON.parse(jsonWire);
+  const restoredDoc: FiToFiCustomerCreditTransfer = FiToFiCustomerCreditTransferSchema.parse(parsedJson);
+  const t_end_de = performance.now();
+  const deUs = (t_end_de - t_start_de) * 1000.0;
+
+  console.log(`[3] Inherent JSON Deserialization & Zod Validation (latency: ${deUs.toFixed(2)}µs):`);
+  console.log(`    Restored MsgId: ${restoredDoc.grpHdr.msgId}`);
+  console.log(`    Restored UETR:  ${restoredDoc.cdtTrfTxInf[0].pmtId.uetr}`);
+  console.log(`    Restored Amount: ${restoredDoc.cdtTrfTxInf[0].intrBkSttlmAmt.value.toFixed(2)} ${restoredDoc.cdtTrfTxInf[0].intrBkSttlmAmt.currency}`);
+  console.log(`    Restored Debtor: ${restoredDoc.cdtTrfTxInf[0].dbtr.name}`);
+  console.log(`    Restored Creditor: ${restoredDoc.cdtTrfTxInf[0].cdtr.name}`);
+
+  if (restoredDoc.cdtTrfTxInf[0].pmtId.uetr !== intent.payment.uetr) {
+    throw new Error("UETR mismatch in TypeScript JSON roundtrip");
   }
-  console.log("  ... [truncated]");
 
-  // 4. Benchmarking
-  const iterations = 10000;
-
-  const t1 = performance.now();
-  for (let i = 0; i < iterations; i++) {
-    serializeXml(validatedDoc);
-  }
-  const t2 = performance.now();
-  const xmlUs = ((t2 - t1) / iterations) * 1000.0;
-
-  const t3 = performance.now();
-  for (let i = 0; i < iterations; i++) {
-    JSON.stringify(validatedDoc);
-  }
-  const t4 = performance.now();
-  const jsonUs = ((t4 - t3) / iterations) * 1000.0;
-
-  console.log("\n--------------------------------------------------------------------------------");
-  console.log("  PolyXML TypeScript Performance Metrics (10,000 iterations)");
-  console.log("--------------------------------------------------------------------------------");
-  console.log(`  XML Serialization:       ${xmlUs.toFixed(2).padStart(8)} µs/op`);
-  console.log(`  JSON Serialization:      ${jsonUs.toFixed(2).padStart(8)} µs/op`);
-  console.log("--------------------------------------------------------------------------------");
-  console.log(`  Debtor:     ${validatedDoc.cdtTrfTxInf[0].dbtr.name} ($${validatedDoc.cdtTrfTxInf[0].intrBkSttlmAmt.value.toFixed(2)} ${validatedDoc.cdtTrfTxInf[0].intrBkSttlmAmt.currency})`);
-  console.log(`  Creditor:   ${validatedDoc.cdtTrfTxInf[0].cdtr.name} via ${validatedDoc.cdtTrfTxInf[0].cdtrAgt.finInstnId.name}`);
-  console.log("================================================================================");
+  console.log("\n✅ TypeScript 5+ Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully with Zod validation!");
 }
 
 main();
+

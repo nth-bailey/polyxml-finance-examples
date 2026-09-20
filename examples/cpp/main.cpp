@@ -291,49 +291,38 @@ int main() {
     }
     std::cout << "✔ ISO 20022 pacs.008 C++20 schema validation passed!\n";
 
-    // 3. Serialize to XML and JSON
-    std::string xml = serialize_xml(doc);
-    std::string jsonWire = serialize_json(doc);
-
-    std::cout << "\nGenerated XML Payload (size: " << xml.size() << " bytes):\n";
-    std::istringstream xmlStream(xml);
-    std::string line;
-    for (int i = 0; i < 22 && std::getline(xmlStream, line); ++i) {
-        std::cout << "  " << line << "\n";
-    }
-    std::cout << "  ... [truncated]\n";
-
-    // 4. Benchmark performance (10,000 iterations)
-    const int iterations = 10000;
-
+    // 1. Inherent XML Serialization
     auto t1 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        std::string x = serialize_xml(doc);
-        (void)x;
-    }
+    std::string xml = serialize_xml(doc);
     auto t2 = std::chrono::high_resolution_clock::now();
-    double xml_us = std::chrono::duration<double, std::micro>(t2 - t1).count() / iterations;
+    double xml_us = std::chrono::duration<double, std::micro>(t2 - t1).count();
 
+    std::cout << "\n[1] Generated ISO 20022 pacs.008.001.10 XML Message (latency: "
+              << std::fixed << std::setprecision(2) << xml_us << "µs):\n";
+    std::cout << xml.substr(0, std::min<size_t>(xml.size(), 400)) << "\n...\n" << std::endl;
+
+    // 2. Inherent Native JSON Serialization on Same Model
     auto t3 = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < iterations; ++i) {
-        std::string j = serialize_json(doc);
-        (void)j;
-    }
+    std::string jsonWire = serialize_json(doc);
     auto t4 = std::chrono::high_resolution_clock::now();
-    double json_us = std::chrono::duration<double, std::micro>(t4 - t3).count() / iterations;
+    double json_us = std::chrono::duration<double, std::micro>(t4 - t3).count();
 
-    std::cout << "\n--------------------------------------------------------------------------------\n";
-    std::cout << "  PolyXML C++20 Performance Metrics (10,000 iterations)\n";
-    std::cout << "--------------------------------------------------------------------------------\n";
-    std::cout << "  XML Serialization:       " << std::setw(8) << std::fixed << std::setprecision(2) << xml_us << " µs/op\n";
-    std::cout << "  JSON Serialization:      " << std::setw(8) << std::fixed << std::setprecision(2) << json_us << " µs/op\n";
-    std::cout << "--------------------------------------------------------------------------------\n";
-    std::cout << "  Debtor:     " << doc.cdt_trf_tx_inf[0].dbtr.name
-              << " ($" << std::fixed << std::setprecision(2) << doc.cdt_trf_tx_inf[0].intr_bk_sttlm_amt.value
-              << " " << doc.cdt_trf_tx_inf[0].intr_bk_sttlm_amt.currency << ")\n";
-    std::cout << "  Creditor:   " << doc.cdt_trf_tx_inf[0].cdtr.name << " via "
-              << *doc.cdt_trf_tx_inf[0].cdtr_agt.fin_instn_id.name << "\n";
-    std::cout << "================================================================================\n";
+    std::cout << "[2] Generated Native JSON on Same Model (latency: "
+              << std::fixed << std::setprecision(2) << json_us << "µs):\n";
+    std::cout << jsonWire.substr(0, std::min<size_t>(jsonWire.size(), 400)) << "\n...\n" << std::endl;
 
+    // 3. Model Inspection & Concept Checks
+    std::cout << "[3] C++20 Value Type Inspection:" << std::endl;
+    std::cout << "    MsgId: " << doc.grp_hdr.msg_id << std::endl;
+    std::cout << "    UETR:  " << doc.cdt_trf_tx_inf[0].pmt_id.uetr << std::endl;
+    std::cout << "    Amount: " << std::fixed << std::setprecision(2) << doc.cdt_trf_tx_inf[0].intr_bk_sttlm_amt.value
+              << " " << doc.cdt_trf_tx_inf[0].intr_bk_sttlm_amt.currency << std::endl;
+    std::cout << "    Debtor: " << doc.cdt_trf_tx_inf[0].dbtr.name << std::endl;
+    std::cout << "    Creditor: " << doc.cdt_trf_tx_inf[0].cdtr.name << " via "
+              << *doc.cdt_trf_tx_inf[0].cdtr_agt.fin_instn_id.name << std::endl;
+    std::cout << "    C++20 XmlModel concept static_assert check: PASS" << std::endl;
+
+    std::cout << "\n✅ C++20 Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!" << std::endl;
     return 0;
 }
+

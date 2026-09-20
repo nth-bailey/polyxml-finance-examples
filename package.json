@@ -4,9 +4,11 @@
   "description": "Modern FinTech Payments to ISO 20022 pacs.008 Bridge across 7 PolyXML Languages",
   "type": "module",
   "scripts": {
-    "finance:ts": "node --experimental-strip-types examples/typescript/index.ts"
+    "finance:ts": "node --experimental-strip-types examples/typescript/index.ts",
+    "prepare": "git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "zod": "^3.23.8"
   }
 }
+
