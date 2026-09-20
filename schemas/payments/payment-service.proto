@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package financial.payments.v1;
+
+option go_package = "github.com/nth-bailey/polyxml-finance-examples/generated/payments";
+option java_package = "com.financial.payments.v1";
+option csharp_namespace = "Financial.Payments.V1";
+
+enum SettlementMethod {
+  SETTLEMENT_METHOD_UNSPECIFIED = 0;
+  SETTLEMENT_METHOD_INDA = 1;
+  SETTLEMENT_METHOD_INGA = 2;
+  SETTLEMENT_METHOD_CLRG = 3;
+}
+
+enum ChargeBearer {
+  CHARGE_BEARER_UNSPECIFIED = 0;
+  CHARGE_BEARER_DEBT = 1;
+  CHARGE_BEARER_CRED = 2;
+  CHARGE_BEARER_SHAR = 3;
+  CHARGE_BEARER_SLEV = 4;
+}
+
+message PostalAddress {
+  string street_name = 1;
+  string building_number = 2;
+  string post_code = 3;
+  string town_name = 4;
+  string country = 5;
+}
+
+message Party {
+  string name = 1;
+  PostalAddress postal_address = 2;
+  string country_of_residence = 3;
+}
+
+message FinancialInstitution {
+  string bicfi = 1;
+  string routing_number = 2;
+  string name = 3;
+}
+
+message CashAccount {
+  string account_number = 1;
+  string iban = 2;
+  string currency = 3;
+  string account_name = 4;
+}
+
+message PaymentInstruction {
+  string instruction_id = 1;
+  string end_to_end_id = 2;
+  string transaction_id = 3;
+  string uetr = 4;
+  string currency = 5;
+  double amount = 6;
+  string settlement_date = 7;
+  ChargeBearer charge_bearer = 8;
+  Party debtor = 9;
+  CashAccount debtor_account = 10;
+  FinancialInstitution debtor_agent = 11;
+  FinancialInstitution creditor_agent = 12;
+  Party creditor = 13;
+  CashAccount creditor_account = 14;
+  string purpose_code = 15;
+  string remittance_unstructured = 16;
+}
+
+message InstantPaymentRequest {
+  string message_id = 1;
+  string created_at = 2;
+  SettlementMethod settlement_method = 3;
+  string clearing_network = 4;
+  repeated PaymentInstruction instructions = 5;
+}
+
+message InstantPaymentResponse {
+  string transaction_id = 1;
+  string uetr = 2;
+  string status = 3;
+  string clearing_timestamp = 4;
+}
+
+service PaymentSettlementService {
+  rpc SubmitCreditTransfer (InstantPaymentRequest) returns (InstantPaymentResponse);
+}

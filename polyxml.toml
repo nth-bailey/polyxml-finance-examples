@@ -1,0 +1,40 @@
+[workspace]
+name = "fednow-iso20022-finance-bridge"
+schemas = ["schemas/finance/pacs_008_core.xsd"]
+output_base_dir = "generated"
+
+[[generate]]
+target = "rust"
+output = "rust"
+zero_copy = true
+codecs = true
+
+[[generate]]
+target = "python"
+output = "python"
+backend = "dataclass"
+codecs = true
+
+[[generate]]
+target = "go"
+output = "go"
+package = "pacs008"
+
+[[generate]]
+target = "cpp"
+output = "cpp"
+
+[[generate]]
+target = "java"
+output = "java"
+package = "com.financial.iso20022.pacs008"
+
+[[generate]]
+target = "typescript"
+output = "typescript"
+zod = true
+
+[[generate]]
+target = "csharp"
+output = "csharp"
+namespace = "Financial.Iso20022.Pacs008"

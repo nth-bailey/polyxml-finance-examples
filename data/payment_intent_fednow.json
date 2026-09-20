@@ -1,0 +1,62 @@
+{
+  "message_id": "MSG-20260920-FEDNOW-883492",
+  "created_at": "2026-09-20T14:30:00Z",
+  "settlement_method": "CLRG",
+  "clearing_network": "FEDNOW_INSTANT",
+  "payment": {
+    "instruction_id": "INSTR-20260920-0012489",
+    "end_to_end_id": "E2E-STRIPE-PAY-99381024",
+    "transaction_id": "TXN-FEDNOW-77192401",
+    "uetr": "c02a781b-5e3b-4652-9b2f-3d204739501a",
+    "amount": 250000.0,
+    "currency": "USD",
+    "settlement_date": "2026-09-20",
+    "charge_bearer": "SLEV",
+    "debtor": {
+      "name": "Acme Global Manufacturing LLC",
+      "address": {
+        "street_name": "500 Madison Avenue",
+        "building_number": "Suite 3400",
+        "post_code": "10022",
+        "town_name": "New York",
+        "country": "US"
+      },
+      "country_of_residence": "US"
+    },
+    "debtor_account": {
+      "account_number": "009182736451",
+      "currency": "USD",
+      "account_name": "Acme Treasury USD Account"
+    },
+    "debtor_agent": {
+      "bicfi": "CHASUS33XXX",
+      "clearing_system_id": "USABA",
+      "routing_number": "021000021",
+      "name": "JPMorgan Chase Bank, N.A."
+    },
+    "creditor_agent": {
+      "bicfi": "IRVTUS3NXXX",
+      "clearing_system_id": "USABA",
+      "routing_number": "021000018",
+      "name": "The Bank of New York Mellon"
+    },
+    "creditor": {
+      "name": "Horizon Maritime Logistics International",
+      "address": {
+        "street_name": "100 Commercial Wharf",
+        "building_number": "Pier 4",
+        "post_code": "02110",
+        "town_name": "Boston",
+        "country": "US"
+      },
+      "country_of_residence": "US"
+    },
+    "creditor_account": {
+      "account_number": "883719204918",
+      "currency": "USD",
+      "account_name": "Horizon Fleet Operations Settlement"
+    },
+    "purpose_code": "SUPP",
+    "remittance": "INV-2026-09-8812 - Transatlantic Fleet Fueling Contract Batch #4"
+  }
+}
