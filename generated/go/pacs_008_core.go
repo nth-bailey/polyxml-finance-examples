@@ -5,10 +5,29 @@ package pacs008
 
 import (
     "encoding/xml"
+    "fmt"
+    "regexp"
     "time"
 )
 
 type ActiveCurrencyCode string
+
+func (s ActiveCurrencyCode) Validate() error {
+    if matched, err := regexp.MatchString("^(?:[A-Z]{3,3})$", fmt.Sprint(s)); err != nil || !matched { return fmt.Errorf("pattern constraint failed") }
+    return nil
+}
+
+func (s *ActiveCurrencyCode) UnmarshalText(text []byte) error {
+    value := ActiveCurrencyCode(text)
+    if err := value.Validate(); err != nil { return err }
+    *s = value
+    return nil
+}
+
+func (s ActiveCurrencyCode) MarshalText() ([]byte, error) {
+    if err := s.Validate(); err != nil { return nil, err }
+    return []byte(s), nil
+}
 
 type ChargeBearerType string
 
@@ -62,6 +81,7 @@ type ActiveOrHistoricCurrencyAndAmount struct {
 }
 
 func (s ActiveOrHistoricCurrencyAndAmount) Validate() error {
+    if err := s.Currency.Validate(); err != nil { return err }
     return nil
 }
 
@@ -82,6 +102,7 @@ type CashAccount struct {
 }
 
 func (s CashAccount) Validate() error {
+    if s.Currency != nil { if err := s.Currency.Validate(); err != nil { return err } }
     return nil
 }
 

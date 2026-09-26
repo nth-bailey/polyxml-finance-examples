@@ -18,6 +18,6 @@ public record ActiveCurrencyCode(@JsonValue @JacksonXmlText String value) {
     }
     public ActiveCurrencyCode {
         Objects.requireNonNull(value, "value must not be null");
-        if (!Pattern.matches("[A-Z]{3,3}", value)) throw new IllegalArgumentException("value does not match pattern: " + "[A-Z]{3,3}");
+        if (!Pattern.compile("[A-Z]{3,3}").matcher(value).matches()) throw new IllegalArgumentException("value does not match pattern: " + "[A-Z]{3,3}");
     }
 }

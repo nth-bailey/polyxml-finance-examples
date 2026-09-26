@@ -34,11 +34,11 @@ backend = "jackson"
 [[generate]]
 target = "typescript"
 output = "typescript"
-zod = true
+backend = "zod"
 
 [[generate]]
 target = "csharp"
 output = "csharp"
 namespace = "Financial.Iso20022.Pacs008"
-source_gen = true
+backend = "source-gen"
 

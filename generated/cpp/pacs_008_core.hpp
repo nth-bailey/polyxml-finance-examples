@@ -2,6 +2,7 @@
 // Target: Modern C++20/C++23 (Header-Only)
 #pragma once
 
+#include <regex>
 #include <concepts>
 #include <cstdint>
 #include <memory>
@@ -44,6 +45,14 @@ struct RemittanceInformation;
 struct SettlementInstruction;
 
 using ActiveCurrencyCode = std::string;
+
+[[nodiscard]] inline bool validate_ActiveCurrencyCode_patterns(std::string_view value) noexcept {
+    try {
+        static const std::regex pattern_0("[A-Z]{3,3}");
+        if (!std::regex_match(value.begin(), value.end(), pattern_0)) return false;
+        return true;
+    } catch (const std::regex_error&) { return false; }
+}
 
 enum class ChargeBearerType {
     Debt,
@@ -158,6 +167,7 @@ struct ActiveOrHistoricCurrencyAndAmount {
     bool operator==(const ActiveOrHistoricCurrencyAndAmount&) const = default;
 
     [[nodiscard]] bool validate() const noexcept {
+        if (!validate_ActiveCurrencyCode_patterns(currency)) return false;
         return true;
     }
 };
@@ -170,6 +180,7 @@ struct CashAccount {
     bool operator==(const CashAccount&) const = default;
 
     [[nodiscard]] bool validate() const noexcept {
+        if (currency.has_value()) { if (!validate_ActiveCurrencyCode_patterns(*currency)) return false; }
         return true;
     }
 };

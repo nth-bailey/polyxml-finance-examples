@@ -1,11 +1,20 @@
-# 💳 PolyXML Finance Showcase: FinTech Payments ↔ ISO 20022 pacs.008 Bridge
+<h1 align="center">
+  <img src="https://raw.githubusercontent.com/polyxml/PolyXML/main/docs/assets/brand/logo_polyxml_banner.png" alt="PolyXML" width="800">
+</h1>
 
-[![CI](https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml)
-[![PolyXML Compiler](https://img.shields.io/badge/PolyXML-v0.19.2-blue.svg)](https://github.com/polyxml/PolyXML)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Languages](https://img.shields.io/badge/Languages-Rust%20%7C%20Python%20%7C%20Go%20%7C%20C%2B%2B%20%7C%20Java%20%7C%20TypeScript%20%7C%20C%23-orange.svg)](#cross-language-capability--latency-benchmarks)
+<p align="center">
+  <strong>💳 PolyXML Finance Showcase: FinTech Payments ↔ ISO 20022 pacs.008 Banking Bridge</strong><br>
+  <em>Rust • Python • Go • C++20 • Java 22+ • TypeScript 5+ / WebAssembly • C# 12</em>
+</p>
 
-Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/polyxml/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 22+, TypeScript 5+, and C# 12 / .NET 8**.
+<p align="center">
+  <a href="https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml"><img src="https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/polyxml/PolyXML"><img src="https://img.shields.io/badge/PolyXML-v0.23.3-blue.svg" alt="PolyXML Compiler"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
+  <a href="#cross-language-capability--latency-benchmarks"><img src="https://img.shields.io/badge/Languages-Rust%20%7C%20Python%20%7C%20Go%20%7C%20C%2B%2B%20%7C%20Java%20%7C%20TypeScript%2FWasm%20%7C%20C%23-orange.svg" alt="Languages"></a>
+</p>
+
+Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/polyxml/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 22+, TypeScript 5+ / WebAssembly (`@polyxml/wasm`), and C# 12 / .NET 8**.
 
 ---
 
@@ -88,7 +97,7 @@ All 7 implementations were benchmarked processing the $250,000 USD FedNow suppli
 | **🦀 Rust** | Borrowed zero-copy slices (`Cow<'a, str>`) & serde codecs | **47.9 μs** | **110.9 μs** | **~48 μs** *(AOT native)* | **Zero heap allocations** |
 | **⚡ C++20** | Header-only value types, `XmlModel` concept & fast streams | **68.2 μs** | **7.4 μs** | **~68 μs** *(AOT native)* | Stack-allocated value types |
 | **🐹 Go** | Dual `xml:"..."` and `json:"..."` struct tags + `XMLName` | **144.3 μs** | **226.8 μs** | **~140 μs** *(AOT native)* | Stack-optimized struct layout |
-| **🌐 TypeScript 5+** | Native ES interfaces + runtime Zod object schemas | **198.0 μs** | **26.5 μs** | **~2.1 μs** *(V8 TurboFan)* | Strict runtime Zod validation |
+| **🌐 TypeScript 5+ & Wasm** | Native ES interfaces + runtime Zod schemas + `@polyxml/wasm` | **198.0 μs** | **26.5 μs** | **~2.1 μs** *(V8 TurboFan)* | Strict runtime Zod validation & streaming Wasm |
 | **☕ Java 22+** | Immutable `record`s, `java.time.Instant`, sealed interfaces | **6.20 ms** *(cold)* | **691.3 μs** | **~8.3 μs** *(HotSpot C2 JIT)* | Immutability & compact constructors |
 | **🐍 Python** | `@dataclass(slots=True)` + PolyXML C-Engine bindings | **4.10 ms** | **439.4 μs** | **~4.1 ms** *(Interpreted)* | Cython/PyO3 bindings |
 | **🔷 C# 12 / .NET 8** | Primary constructor records, `XmlSerializer` + `System.Text.Json` | **10.79 ms** *(cold)* | **39.12 ms** | **~28.5 μs** *(RyuJIT)* | Value record semantics |

@@ -8,7 +8,7 @@ import { z } from "zod";
 
 export type ActiveCurrencyCode = string;
 
-export const ActiveCurrencyCodeSchema = z.string().regex(new RegExp("[A-Z]{3,3}"));
+export const ActiveCurrencyCodeSchema = z.string().regex(new RegExp("^(?:[A-Z]{3,3})(?![\\s\\S])"));
 
 export const ChargeBearerType = {
   Debt: "DEBT",

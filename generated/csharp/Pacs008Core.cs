@@ -17,7 +17,7 @@ public sealed record ActiveCurrencyCode([property: XmlText] string Value) : IVal
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (!Regex.IsMatch(Value.ToString() ?? "", "^[A-Z]{3,3}$")) yield return new ValidationResult("Value does not match pattern [A-Z]{3,3}", [nameof(Value)]);
+        if (!Regex.IsMatch(Value.ToString() ?? "", "\\A(?:[A-Z]{3,3})\\z")) yield return new ValidationResult("Value does not match pattern \\A(?:[A-Z]{3,3})\\z", [nameof(Value)]);
         yield break;
     }
 }

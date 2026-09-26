@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { Readable } from "node:stream";
+import { createPolyXml } from "@polyxml/wasm";
 import {
   ChargeBearerType,
   SettlementMethodCode,
@@ -201,7 +203,7 @@ function serializeXml(doc: FiToFiCustomerCreditTransfer): string {
   return xml;
 }
 
-function main() {
+async function main() {
   console.log("================================================================================");
   console.log("  PolyXML TypeScript 5+ Showcase: FedNow Payment Intent -> ISO 20022 pacs.008");
   console.log("================================================================================");
@@ -336,7 +338,28 @@ function main() {
     throw new Error("UETR mismatch in TypeScript JSON roundtrip");
   }
 
-  console.log("\n✅ TypeScript 5+ Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully with Zod validation!");
+  // 4. WebAssembly Engine (@polyxml/wasm): In-Browser / Node Wasm Transcoding & Streaming
+  const t_start_wasm = performance.now();
+  const polyxmlWasm = await createPolyXml();
+  const wasmParsed = polyxmlWasm.xmlToJson(xmlOutput);
+  const wasmXml = polyxmlWasm.jsonToXml(wasmParsed);
+  const t_end_wasm = performance.now();
+  const wasmUs = (t_end_wasm - t_start_wasm) * 1000.0;
+
+  console.log(`\n[4] WebAssembly Engine (@polyxml/wasm) (latency: ${wasmUs.toFixed(2)}µs):`);
+  console.log(`    Wasm Converted JSON Root: ${Object.keys(wasmParsed as object).join(", ")}`);
+  console.log(`    Wasm XML Roundtrip Size:  ${wasmXml.length} bytes`);
+
+  // Streaming record parsing demonstration: simulate streaming incoming credit transfer XML records
+  const sampleStreamXml = `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.10"><FIToFICstmrCdtTrf><CdtTrfTxInf><PmtId><EndToEndId>E2E-FEDNOW-001</EndToEndId><UETR>${intent.payment.uetr}</UETR></PmtId><IntrBkSttlmAmt Ccy="USD">250000.00</IntrBkSttlmAmt></CdtTrfTxInf></FIToFICstmrCdtTrf></Document>`;
+  const webStream = Readable.toWeb(Readable.from([sampleStreamXml]));
+  let streamedRecordsCount = 0;
+  for await (const record of polyxmlWasm.parseStream(webStream)) {
+    streamedRecordsCount++;
+    console.log(`    Wasm Stream Record #${streamedRecordsCount}: ${Object.keys(record as object).join(", ")}`);
+  }
+
+  console.log("\n✅ TypeScript 5+ & WebAssembly Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!");
 }
 
 main();

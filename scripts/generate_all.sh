@@ -63,13 +63,13 @@ echo -e "\n[5/7] ☕ Generating Java 22+ (Records, Sealed Interfaces & Jackson E
 echo -e "\n[6/7] 🌐 Generating TypeScript 5+ (Typed Interfaces & Zod Validation)..."
 "${POLYXML_BIN}" generate "${SCHEMA_PATH}" \
   --lang ts \
-  --zod \
+  --backend zod \
   --out generated/typescript
 
 echo -e "\n[7/7] 🔷 Generating C# 12 / .NET 8 (Primary Constructor Records & Native AOT Source Generator)..."
 "${POLYXML_BIN}" generate "${SCHEMA_PATH}" \
   --lang csharp \
-  --source-gen \
+  --backend source-gen \
   --package "Financial.Iso20022.Pacs008" \
   --out generated/csharp
 

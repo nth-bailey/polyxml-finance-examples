@@ -4,6 +4,7 @@
     unused_imports,
     unused_mut,
     unused_variables,
+    unused_assignments,
     non_camel_case_types,
     non_snake_case
 )]
@@ -47,7 +48,25 @@ fn read_element_text<'a>(reader: &mut Reader<&'a [u8]>, tag_name: &str) -> Resul
                     },
                     Cow::Owned(s) => Cow::Owned(quick_xml::escape::unescape(&s)?.into_owned()),
                 };
-                text = raw;
+                if text.is_empty() {
+                    text = raw;
+                } else {
+                    text.to_mut().push_str(&raw);
+                }
+            }
+            Event::CData(c) => {
+                text.to_mut().push_str(c.as_ref());
+            }
+            Event::GeneralRef(r) => {
+                if r.is_char_ref() {
+                    if let Some(ch) = r.resolve_char_ref()? {
+                        text.to_mut().push(ch);
+                    }
+                } else if let Some(val) = quick_xml::escape::resolve_xml_entity(r.as_ref()) {
+                    text.to_mut().push_str(val);
+                } else {
+                    text.to_mut().push_str(r.as_ref());
+                }
             }
             Event::End(e) if e.local_name().as_ref() == tag_name => break,
             Event::Eof => break,
@@ -58,6 +77,18 @@ fn read_element_text<'a>(reader: &mut Reader<&'a [u8]>, tag_name: &str) -> Resul
 }
 
 pub type ActiveCurrencyCode<'a> = Cow<'a, str>;
+pub fn validate_ActiveCurrencyCode_patterns(value: &str) -> std::result::Result<(), &'static str> {
+    static PATTERN_0: std::sync::OnceLock<std::result::Result<regex::Regex, regex::Error>> =
+        std::sync::OnceLock::new();
+    let pattern = PATTERN_0
+        .get_or_init(|| regex::Regex::new("\\A(?:[A-Z]{3,3})\\z"))
+        .as_ref()
+        .map_err(|_| "unsupported pattern syntax")?;
+    if !pattern.is_match(value) {
+        return Err("pattern constraint failed");
+    }
+    Ok(())
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
 pub enum ChargeBearerType {
@@ -315,6 +346,13 @@ impl<'a> ActiveOrHistoricCurrencyAndAmount<'a> {
                 Event::Start(e) => match e.local_name().as_ref() {
                     "Currency" => {
                         let text = read_element_text(reader, "Currency")?;
+                        validate_ActiveCurrencyCode_patterns(&text).map_err(|message| {
+                            PolyXmlError::FacetViolation {
+                                field: "currency".into(),
+                                expected: message.into(),
+                                actual: (&text).to_string(),
+                            }
+                        })?;
                         var_currency = Some(text);
                     }
                     "Value" => {
@@ -335,6 +373,13 @@ impl<'a> ActiveOrHistoricCurrencyAndAmount<'a> {
                 },
                 Event::Empty(e) => match e.local_name().as_ref() {
                     "Currency" => {
+                        validate_ActiveCurrencyCode_patterns("").map_err(|message| {
+                            PolyXmlError::FacetViolation {
+                                field: "currency".into(),
+                                expected: message.into(),
+                                actual: ("").to_string(),
+                            }
+                        })?;
                         var_currency = Some(Cow::Borrowed(""));
                     }
                     "Value" => {}
@@ -346,24 +391,28 @@ impl<'a> ActiveOrHistoricCurrencyAndAmount<'a> {
             }
         }
 
-        Ok(Self {
+        let value = Self {
             currency: var_currency.ok_or_else(|| {
                 PolyXmlError::SchemaError("Missing required field 'Currency'".into())
             })?,
             value: var_value.ok_or_else(|| {
                 PolyXmlError::SchemaError("Missing required field 'Value'".into())
             })?,
-        })
+        };
+        value.validate_patterns()?;
+        Ok(value)
     }
 
     pub fn decode_xml_empty(start: &BytesStart<'_>) -> Result<Self> {
         let mut var_currency = None;
         let mut var_value = None;
 
-        Ok(Self {
+        let value = Self {
             currency: var_currency.unwrap_or(Cow::Borrowed("")),
             value: var_value.unwrap_or_default(),
-        })
+        };
+        value.validate_patterns()?;
+        Ok(value)
     }
 
     pub fn to_xml(&self) -> Result<Vec<u8>> {
@@ -394,11 +443,22 @@ impl<'a> ActiveOrHistoricCurrencyAndAmount<'a> {
         serde_json::to_vec(self)
     }
 
+    pub fn validate_patterns(&self) -> Result<()> {
+        validate_ActiveCurrencyCode_patterns(&self.currency.to_string()).map_err(|message| {
+            PolyXmlError::FacetViolation {
+                field: "currency".into(),
+                expected: message.into(),
+                actual: (&self.currency.to_string()).to_string(),
+            }
+        })?;
+        Ok(())
+    }
     pub fn encode_xml<W: std::io::Write>(
         &self,
         writer: &mut Writer<W>,
         tag_name: Option<&str>,
     ) -> Result<()> {
+        self.validate_patterns()?;
         let tag = tag_name.unwrap_or("ActiveOrHistoricCurrencyAndAmount");
         let mut start = BytesStart::new(tag);
         writer.write_event(Event::Start(start))?;
@@ -569,6 +629,13 @@ impl<'a> CashAccount<'a> {
                     }
                     "Currency" => {
                         let text = read_element_text(reader, "Currency")?;
+                        validate_ActiveCurrencyCode_patterns(&text).map_err(|message| {
+                            PolyXmlError::FacetViolation {
+                                field: "currency".into(),
+                                expected: message.into(),
+                                actual: (&text).to_string(),
+                            }
+                        })?;
                         var_currency = Some(text);
                     }
                     "Name" => {
@@ -585,6 +652,13 @@ impl<'a> CashAccount<'a> {
                         var_id = Some(val);
                     }
                     "Currency" => {
+                        validate_ActiveCurrencyCode_patterns("").map_err(|message| {
+                            PolyXmlError::FacetViolation {
+                                field: "currency".into(),
+                                expected: message.into(),
+                                actual: ("").to_string(),
+                            }
+                        })?;
                         var_currency = Some(Cow::Borrowed(""));
                     }
                     "Name" => {
@@ -598,12 +672,14 @@ impl<'a> CashAccount<'a> {
             }
         }
 
-        Ok(Self {
+        let value = Self {
             id: var_id
                 .ok_or_else(|| PolyXmlError::SchemaError("Missing required field 'Id'".into()))?,
             currency: var_currency,
             name: var_name,
-        })
+        };
+        value.validate_patterns()?;
+        Ok(value)
     }
 
     pub fn decode_xml_empty(start: &BytesStart<'_>) -> Result<Self> {
@@ -611,11 +687,13 @@ impl<'a> CashAccount<'a> {
         let mut var_currency = None;
         let mut var_name = None;
 
-        Ok(Self {
+        let value = Self {
             id: var_id.unwrap_or_default(),
             currency: var_currency,
             name: var_name,
-        })
+        };
+        value.validate_patterns()?;
+        Ok(value)
     }
 
     pub fn to_xml(&self) -> Result<Vec<u8>> {
@@ -646,11 +724,24 @@ impl<'a> CashAccount<'a> {
         serde_json::to_vec(self)
     }
 
+    pub fn validate_patterns(&self) -> Result<()> {
+        if let Some(value) = &self.currency {
+            validate_ActiveCurrencyCode_patterns(&value.to_string()).map_err(|message| {
+                PolyXmlError::FacetViolation {
+                    field: "currency".into(),
+                    expected: message.into(),
+                    actual: (&value.to_string()).to_string(),
+                }
+            })?;
+        }
+        Ok(())
+    }
     pub fn encode_xml<W: std::io::Write>(
         &self,
         writer: &mut Writer<W>,
         tag_name: Option<&str>,
     ) -> Result<()> {
+        self.validate_patterns()?;
         let tag = tag_name.unwrap_or("CashAccount");
         let mut start = BytesStart::new(tag);
         writer.write_event(Event::Start(start))?;
