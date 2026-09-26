@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	pacs008 "github.com/nth-bailey/polyxml-finance-examples/generated/go"
+	pacs008 "github.com/polyxml/polyxml-finance-examples/generated/go"
 )
 
 // PaymentIntentDTO models the incoming FedNow / Stripe instant payment intent JSON

@@ -1,11 +1,11 @@
 # 💳 PolyXML Finance Showcase: FinTech Payments ↔ ISO 20022 pacs.008 Bridge
 
-[![CI](https://github.com/nth-bailey/polyxml-finance-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/nth-bailey/polyxml-finance-examples/actions/workflows/ci.yml)
-[![PolyXML Compiler](https://img.shields.io/badge/PolyXML-v0.19.2-blue.svg)](https://github.com/nth-bailey/PolyXML)
+[![CI](https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml/badge.svg)](https://github.com/polyxml/polyxml-finance-examples/actions/workflows/ci.yml)
+[![PolyXML Compiler](https://img.shields.io/badge/PolyXML-v0.19.2-blue.svg)](https://github.com/polyxml/PolyXML)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Languages](https://img.shields.io/badge/Languages-Rust%20%7C%20Python%20%7C%20Go%20%7C%20C%2B%2B%20%7C%20Java%20%7C%20TypeScript%20%7C%20C%23-orange.svg)](#cross-language-capability--latency-benchmarks)
 
-Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/nth-bailey/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 21+, TypeScript 5+, and C# 12 / .NET 8**.
+Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/polyxml/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 21+, TypeScript 5+, and C# 12 / .NET 8**.
 
 ---
 

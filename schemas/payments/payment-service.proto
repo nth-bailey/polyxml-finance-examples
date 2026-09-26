@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package financial.payments.v1;
 
-option go_package = "github.com/nth-bailey/polyxml-finance-examples/generated/payments";
+option go_package = "github.com/polyxml/polyxml-finance-examples/generated/payments";
 option java_package = "com.financial.payments.v1";
 option csharp_namespace = "Financial.Payments.V1";
 
