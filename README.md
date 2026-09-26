@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Languages](https://img.shields.io/badge/Languages-Rust%20%7C%20Python%20%7C%20Go%20%7C%20C%2B%2B%20%7C%20Java%20%7C%20TypeScript%20%7C%20C%23-orange.svg)](#cross-language-capability--latency-benchmarks)
 
-Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/polyxml/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 21+, TypeScript 5+, and C# 12 / .NET 8**.
+Production-ready polyglot financial engineering showcase demonstrating **[PolyXML](https://github.com/polyxml/PolyXML)** compiling the global banking standard **ISO 20022 `pacs.008.001.10` (Financial Institutional Customer Credit Transfer)** XML schema and bridging real-time **FinTech payment intents (FedNow, Stripe, Plaid JSON)** across all **7 PolyXML supported programming languages**: **Rust, Python, Go, C++20, Java 22+, TypeScript 5+, and C# 12 / .NET 8**.
 
 ---
 
@@ -25,7 +25,7 @@ The global banking and payments ecosystem is undergoing the largest architectura
 Historically, bridging modern JSON payment gateways and SWIFT / Fedwire ISO 20022 XML required maintaining brittle, manual serialization glue in every programming language. **PolyXML** eliminates this complexity:
 - **Unified Typed Data Models**: Single schema source (`pacs_008_core.xsd`) compiled into idiomatic, native types across 7 programming languages.
 - **Inherent Dual XML & JSON Serialization**: The exact same memory record/struct serializes to both fully validated ISO 20022 XML and clean JSON wire representations with zero heap allocations or extra adapters.
-- **Microsecond Polyglot Performance**: Zero-copy parsing in Rust, SIMD/header-only value types in C++20, records in Java 21 & C#, and C-speed transcoding in Python and TypeScript.
+- **Microsecond Polyglot Performance**: Zero-copy parsing in Rust, SIMD/header-only value types in C++20, records in Java 22 & C#, and C-speed transcoding in Python and TypeScript.
 
 ---
 
@@ -89,16 +89,16 @@ All 7 implementations were benchmarked processing the $250,000 USD FedNow suppli
 | **⚡ C++20** | Header-only value types, `XmlModel` concept & fast streams | **68.2 μs** | **7.4 μs** | **~68 μs** *(AOT native)* | Stack-allocated value types |
 | **🐹 Go** | Dual `xml:"..."` and `json:"..."` struct tags + `XMLName` | **144.3 μs** | **226.8 μs** | **~140 μs** *(AOT native)* | Stack-optimized struct layout |
 | **🌐 TypeScript 5+** | Native ES interfaces + runtime Zod object schemas | **198.0 μs** | **26.5 μs** | **~2.1 μs** *(V8 TurboFan)* | Strict runtime Zod validation |
-| **☕ Java 21+** | Immutable `record`s, `java.time.Instant`, sealed interfaces | **6.20 ms** *(cold)* | **691.3 μs** | **~8.3 μs** *(HotSpot C2 JIT)* | Immutability & compact constructors |
+| **☕ Java 22+** | Immutable `record`s, `java.time.Instant`, sealed interfaces | **6.20 ms** *(cold)* | **691.3 μs** | **~8.3 μs** *(HotSpot C2 JIT)* | Immutability & compact constructors |
 | **🐍 Python** | `@dataclass(slots=True)` + PolyXML C-Engine bindings | **4.10 ms** | **439.4 μs** | **~4.1 ms** *(Interpreted)* | Cython/PyO3 bindings |
 | **🔷 C# 12 / .NET 8** | Primary constructor records, `XmlSerializer` + `System.Text.Json` | **10.79 ms** *(cold)* | **39.12 ms** | **~28.5 μs** *(RyuJIT)* | Value record semantics |
 
-*Benchmarked on Linux x86_64 across identical FedNow payment payloads. Measurements reflect end-to-end serialization and typed deserialization.*
+*Benchmarked on Linux x86_64 across identical FedNow payment payloads. Measurements reflect end-to-end serialization and typed deserialization. The Java figures were measured on JDK 21 before PolyXML raised its supported minimum to Java 22; rerun them on Java 22+ for current comparisons.*
 
 > [!NOTE]
 > **Understanding Cold Single-Shot vs. Steady-State (JIT Warmed) Latency:**
 > - **AOT Compiled Languages (Rust, C++, Go)**: Compiled Ahead-of-Time directly to native machine code. They have **zero classloading or JIT warm-up overhead**; execution immediately runs at full production speed on the very first instruction.
-> - **Managed JIT Runtimes (Java 21+, C# 12 / .NET 8)**: Single-shot cold measurements include one-time JVM dynamic class loading, bytecode verification, and .NET `XmlSerializer` code generation (~6–11 ms). In continuous production environments (e.g., high-frequency FedNow payment gateways, banking microservices, Kafka transaction streams) after HotSpot C2 / RyuJIT compilation, Java executes in **~8.3 μs** and C# in **~28.5 μs**.
+> - **Managed JIT Runtimes (Java 22+, C# 12 / .NET 8)**: Single-shot cold measurements include one-time JVM dynamic class loading, bytecode verification, and .NET `XmlSerializer` code generation (~6–11 ms). In continuous production environments (e.g., high-frequency FedNow payment gateways, banking microservices, Kafka transaction streams) after HotSpot C2 / RyuJIT compilation, Java executes in **~8.3 μs** and C# in **~28.5 μs**.
 
 ---
 
@@ -147,7 +147,7 @@ polyxml generate schemas/finance/pacs_008_core.xsd \
   --out generated/cpp
 ```
 
-#### 5. ☕ Java 21+ (Records & Sealed Interfaces)
+#### 5. ☕ Java 22+ (Records & Sealed Interfaces)
 ```bash
 polyxml generate schemas/finance/pacs_008_core.xsd \
   --lang java \
@@ -223,7 +223,7 @@ assert(doc.validate()); // Validates all ISO 20022 facet constraints
 std::string xml = serialize_xml(doc); // 68.2 μs
 ```
 
-### 4. ☕ Java 21+: Modern Records with Compact Constructors
+### 4. ☕ Java 22+: Modern Records with Compact Constructors
 ```java
 // Immutable record with automatic ISO 4217 currency regex validation
 public record ActiveCurrencyCode(String value) {
@@ -291,7 +291,7 @@ go run ./examples/go
 # Modern C++20
 cmake -B examples/cpp/build examples/cpp && cmake --build examples/cpp/build && ./examples/cpp/build/fednow_pacs008_adapter
 
-# Java 21+
+# Java 22+
 mvn -f examples/java/pom.xml compile exec:java
 
 # TypeScript 5+
@@ -312,4 +312,3 @@ Distributed under the MIT License. See [`LICENSE`](LICENSE) for full terms.
 
 For third-party standards, specifications, open financial messaging policies (ISO 20022 IPR Policy), and trademark notices, see [`NOTICE`](NOTICE).
 All schemas are sourced from open international standards bodies ([ISO 20022 Registration Authority](https://www.iso20022.org)).
-

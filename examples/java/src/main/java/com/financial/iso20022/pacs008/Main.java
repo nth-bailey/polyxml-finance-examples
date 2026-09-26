@@ -190,7 +190,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         System.out.println("================================================================================");
-        System.out.println("  PolyXML Java 21+ Showcase: FedNow Payment Intent -> ISO 20022 pacs.008");
+        System.out.println("  PolyXML Java 22+ Showcase: FedNow Payment Intent -> ISO 20022 pacs.008");
         System.out.println("================================================================================");
 
         Path dataPath = findDataFile();
@@ -288,7 +288,7 @@ public class Main {
 
         FiToFiCustomerCreditTransfer doc = new FiToFiCustomerCreditTransfer(grpHdr, List.of(tx));
 
-        System.out.println("✔ ISO 20022 pacs.008 Java 21 Record schema instantiation validated!");
+        System.out.println("✔ ISO 20022 pacs.008 Java 22 Record schema instantiation validated!");
 
         // 1. Inherent XML Serialization
         long t1 = System.nanoTime();
@@ -308,8 +308,8 @@ public class Main {
         System.out.printf("[2] Generated Native JSON on Same Model (latency: %.2f µs):\n", jsonUs);
         System.out.println(jsonWire.substring(0, Math.min(jsonWire.length(), 400)) + "\n...\n");
 
-        // 3. Java 21 Record Pattern Matching & Inspection
-        System.out.println("[3] Java 21 Record Pattern Matching & Inspection:");
+        // 3. Java 22 Record Pattern Matching & Inspection
+        System.out.println("[3] Java 22 Record Pattern Matching & Inspection:");
         System.out.printf("    MsgId: %s\n", doc.grpHdr().msgId());
         System.out.printf("    UETR:  %s\n", doc.cdtTrfTxInf().get(0).pmtId().uetr());
         System.out.printf("    Amount: %.2f %s\n", doc.cdtTrfTxInf().get(0).intrBkSttlmAmt().value(),
@@ -319,7 +319,7 @@ public class Main {
             doc.cdtTrfTxInf().get(0).cdtrAgt().finInstnId().name().orElse(""));
         System.out.println("    Record immutability & compact constructors: PASS");
 
-        System.out.println("\n✅ Java 21+ Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!");
+        System.out.println("\n✅ Java 22+ Modern Payments ↔ ISO 20022 pacs.008 Bridge executed successfully!");
     }
 }
 

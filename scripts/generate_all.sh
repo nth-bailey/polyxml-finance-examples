@@ -53,7 +53,7 @@ echo -e "\n[4/7] ⚡ Generating Modern C++20 (Header-Only Value Types & Concepts
   --package "polyxml::generated" \
   --out generated/cpp
 
-echo -e "\n[5/7] ☕ Generating Java 21+ (Records, Sealed Interfaces & Jackson Enterprise Annotations)..."
+echo -e "\n[5/7] ☕ Generating Java 22+ (Records, Sealed Interfaces & Jackson Enterprise Annotations)..."
 "${POLYXML_BIN}" generate "${SCHEMA_PATH}" \
   --lang java \
   --backend jackson \
